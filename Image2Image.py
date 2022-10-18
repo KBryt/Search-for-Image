@@ -1,25 +1,34 @@
-from tensorflow import keras
+from tensorflow.keras import Model
+from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras import layers 
 
-from keras.applications import VGG16
-from keras import Model
-from keras.utils import load_img
-from keras.utils import img_to_array
-from keras.applications.vgg16 import preprocess_input
-from keras.models import save_model
+from tensorflow.keras.utils import load_img
+from tensorflow.keras.utils import img_to_array
+from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.models import save_model
 
 from scipy.spatial.distance import cosine
-
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+from matplotlib import pyplot as plt
 
 import os
 import cv2
 import pickle
 from tqdm import tqdm
-import apache_beam as beam
 from absl import app
 
-class SearchImage(beam.DoFn):
+_INPUT_IMAGE_PRODUCT_METADATA_FILENAME = flags.DEFINE_string(
+    'input_image_product_metadata_filename',
+    default=None,
+    help='The input file name for the Image Product Metadata.',
+    required=True)
+
+_INPUT_REQUEST_IMAGE_FILENAME = flags.DEFINE_string(
+    'input_request_image_filename',
+    default=None,
+    help='The input request image file name for similar images.',
+    required=True)
+
+class SearchImage():
  # Pretrained Model from tensorflow
  def model_ResNet50_feature_extractor():
   pretrained_model = ResNet50()
@@ -42,12 +51,12 @@ class SearchImage(beam.DoFn):
 #     # predictions = Dense(200, activation='softmax')(x)
 #     model = Model(inputs=pretrained_model.inputs, outputs=pretrained_model.layers[-2].output)
 #     return model
-  def plot_input_image_features(image_request_features):
+  def plot_input_image_features(self,image_request_features):
     plt.figure(figsize=(16,10))
     plt.plot(image_request_features)
 
 
-  def image_request_features_extract(image_path):
+  def image_request_features_extract(self, image_path):
     # load an image from file
     image_request = load_img(image_path, target_size=(224, 224))
     # convert the image pixels to a numpy array
@@ -112,9 +121,10 @@ class SearchImage(beam.DoFn):
     query_image_features = image_request_features_extract(query_image_path)
     all_cosine_distance = calculate_cosine_distance_with_all_DB_images(query_image_features, all_images_features)
     plot_same_or_similar_images(all_cosine_distance)
-
+    
+  
   model =  model_inceptionv3_feature_extractor()
-  all_images_path = "path1"
+  all_images_path = _INPUT_IMAGE_PRODUCT_METADATA_FILENAME
   all_images_features = image_database_features(all_images_path)
 
   def view_image(target_dir):
@@ -129,11 +139,11 @@ class SearchImage(beam.DoFn):
 
     return img
 
-  request_image_path = path2
-  im = view_image('request_image_path')
+  request_image_path = _INPUT_REQUEST_IMAGE_FILENAME
+  im = view_image( request_image_path )
 
   query_image_path = request_image_path
   find_same_or_similar_image(query_image_path)
 
   if __name__ == '__main__':
-    app.run(main)
+    main()
