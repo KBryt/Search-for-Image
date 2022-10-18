@@ -1,0 +1,2 @@
+absl-py>=1.0.0
+apache-beam>=2.34.0
