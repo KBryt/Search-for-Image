@@ -20,18 +20,28 @@ import apache_beam as beam
 from absl import app
 
 class SearchImage(beam.DoFn):
+ # Pretrained Model from tensorflow
+ def model_ResNet50_feature_extractor():
+  pretrained_model = ResNet50()
+  # add a global spatial average pooling layer
+  # x = pretrained_model.output
+  # x = GlobalAveragePooling2D()(x)
+  # x = Dense(1024, activation='relu')(x)
+  # # and a logistic layer -- let's say we have 200 classes
+  # predictions = Dense(200, activation='softmax')(x)
+  model = Model(inputs=pretrained_model.inputs, outputs=pretrained_model.layers[-2].output)
+  return model
  
-  def model_inceptionv3_feature_extractor():
-    pretrained_model = InceptionV3()
-    # add a global spatial average pooling layer
-    # x = pretrained_model.output
-    # x = GlobalAveragePooling2D()(x)
-    # x = Dense(1024, activation='relu')(x)
-    # # and a logistic layer -- let's say we have 200 classes
-    # predictions = Dense(200, activation='softmax')(x)
-    model = Model(inputs=pretrained_model.inputs, outputs=pretrained_model.layers[-2].output)
-    return model
-
+#   def model_inceptionv3_feature_extractor():
+#     pretrained_model = InceptionV3()
+#     # add a global spatial average pooling layer
+#     # x = pretrained_model.output
+#     # x = GlobalAveragePooling2D()(x)
+#     # x = Dense(1024, activation='relu')(x)
+#     # # and a logistic layer -- let's say we have 200 classes
+#     # predictions = Dense(200, activation='softmax')(x)
+#     model = Model(inputs=pretrained_model.inputs, outputs=pretrained_model.layers[-2].output)
+#     return model
   def plot_input_image_features(image_request_features):
     plt.figure(figsize=(16,10))
     plt.plot(image_request_features)
